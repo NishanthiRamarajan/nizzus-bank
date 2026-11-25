@@ -1,0 +1,164 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return signedIn() && request.auth.token.nexusAdmin == true;
+    }
+
+    function isVerifiedOwner(uid) {
+      return signedIn()
+        && request.auth.uid == uid
+        && request.auth.token.email_verified == true;
+    }
+
+    function validApplication() {
+      return request.resource.data.keys().hasAll([
+          'uid', 'email', 'name', 'address', 'status', 'revision', 'updatedAt'
+        ])
+        && request.resource.data.keys().hasOnly([
+          'uid', 'email', 'name', 'address', 'status', 'revision',
+          'updatedAt', 'note', 'reviewedBy'
+        ])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 120
+        && request.resource.data.address is string
+        && request.resource.data.address.size() > 0
+        && request.resource.data.address.size() <= 300
+        && request.resource.data.email == request.auth.token.email;
+    }
+
+    match /nizzus_applications/{uid} {
+      allow get: if signedIn() && (request.auth.uid == uid || isAdmin());
+      allow list: if isAdmin();
+
+      allow create: if isVerifiedOwner(uid)
+        && validApplication()
+        && request.resource.data.uid == uid
+        && request.resource.data.status == 'PENDING'
+        && request.resource.data.revision == 1;
+
+      allow update: if isAdmin()
+          && resource.data.status in ['PENDING', 'HOLD']
+          && request.resource.data.revision == resource.data.revision
+          && request.resource.data.status in ['APPROVED', 'HOLD', 'REJECTED']
+          && request.resource.data.reviewedBy == request.auth.uid
+          && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['status', 'note', 'reviewedBy', 'updatedAt'])
+          && (request.resource.data.status == 'APPROVED'
+            || (request.resource.data.note is string
+              && request.resource.data.note.size() > 0
+              && request.resource.data.note.size() <= 300))
+        || isVerifiedOwner(uid)
+          && resource.data.status == 'HOLD'
+          && validApplication()
+          && request.resource.data.uid == resource.data.uid
+          && request.resource.data.email == resource.data.email
+          && request.resource.data.status == 'PENDING'
+          && request.resource.data.revision == resource.data.revision + 1
+          && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['name', 'address', 'status', 'revision', 'updatedAt', 'note']);
+
+      match /documents/{proofId} {
+        allow get: if proofId == 'proof' && signedIn() && (request.auth.uid == uid || isAdmin());
+        allow list: if proofId == 'proof' && isAdmin();
+        allow create, update: if proofId == 'proof'
+          && isVerifiedOwner(uid)
+          && getAfter(/databases/$(database)/documents/nizzus_applications/$(uid)).data.status == 'PENDING'
+          && (!exists(/databases/$(database)/documents/nizzus_applications/$(uid))
+            || get(/databases/$(database)/documents/nizzus_applications/$(uid)).data.status == 'HOLD')
+          && request.resource.data.keys().hasOnly(['type', 'data'])
+          && request.resource.data.type in ['application/pdf', 'image/png', 'image/jpeg']
+          && request.resource.data.data is string
+          && request.resource.data.data.size() <= 349528;
+        allow delete: if false;
+      }
+    }
+
+    match /nizzus_customers/{uid}/positions/{positionId} {
+      allow read: if signedIn() && request.auth.uid == uid;
+      allow create, update: if signedIn()
+        && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['name', 'valueMinor', 'updatedAt'])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 120
+        && request.resource.data.valueMinor is int
+        && request.resource.data.valueMinor > 0
+        && request.resource.data.valueMinor <= 100000000000;
+      allow delete: if signedIn() && request.auth.uid == uid;
+    }
+
+    match /nizzus_loans/{loanId} {
+      allow get: if signedIn() && (resource.data.uid == request.auth.uid || isAdmin());
+      allow list: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid);
+
+      allow create: if signedIn()
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.keys().hasOnly([
+          'uid', 'purpose', 'amountMinor', 'months', 'status', 'version', 'updatedAt'
+        ])
+        && request.resource.data.purpose is string
+        && request.resource.data.purpose.size() > 0
+        && request.resource.data.purpose.size() <= 120
+        && request.resource.data.amountMinor is int
+        && request.resource.data.amountMinor > 0
+        && request.resource.data.amountMinor <= 100000000000
+        && request.resource.data.months is int
+        && request.resource.data.months >= 1
+        && request.resource.data.months <= 360
+        && request.resource.data.status == 'PENDING'
+        && request.resource.data.version == 0;
+
+      allow update: if signedIn()
+          && isAdmin()
+          && resource.data.status == 'PENDING'
+          && request.resource.data.status in ['APPROVED', 'REJECTED']
+          && request.resource.data.version == resource.data.version + 1
+          && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['status', 'version', 'updatedAt'])
+        || signedIn()
+          && resource.data.uid == request.auth.uid
+          && resource.data.status == 'PENDING'
+          && request.resource.data.uid == resource.data.uid
+          && request.resource.data.version == resource.data.version + 1
+          && ((request.resource.data.status == 'PENDING'
+              && request.resource.data.diff(resource.data).affectedKeys()
+                .hasOnly(['purpose', 'amountMinor', 'months', 'version', 'updatedAt'])
+              && request.resource.data.purpose is string
+              && request.resource.data.purpose.size() > 0
+              && request.resource.data.purpose.size() <= 120
+              && request.resource.data.amountMinor is int
+              && request.resource.data.amountMinor > 0
+              && request.resource.data.amountMinor <= 100000000000
+              && request.resource.data.months is int
+              && request.resource.data.months >= 1
+              && request.resource.data.months <= 360)
+            || (request.resource.data.status == 'WITHDRAWN'
+              && request.resource.data.diff(resource.data).affectedKeys()
+                .hasOnly(['status', 'version', 'updatedAt'])));
+    }
+
+    match /nizzus_partners/{partnerId} {
+      allow read: if isAdmin();
+      allow create, update: if isAdmin()
+        && request.resource.data.keys().hasOnly(['name', 'ifsc', 'address'])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 120
+        && request.resource.data.ifsc is string
+        && request.resource.data.ifsc.matches('^[A-Z]{4}0[A-Z0-9]{6}$')
+        && request.resource.data.address is string
+        && request.resource.data.address.size() > 0
+        && request.resource.data.address.size() <= 300;
+      allow delete: if isAdmin();
+    }
+
+    // No client access is granted to accounts, ledger entries, transfers,
+    // reservations, daily usage, inbox receipts, or transfer limits.
+  }
+}

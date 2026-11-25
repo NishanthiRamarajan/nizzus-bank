@@ -23,9 +23,9 @@ jobs:
           cache: npm
       - uses: actions/configure-pages@v5
       - run: npm ci
+      - name: Load public frontend configuration
+        run: cp .env.example .env.production
       - run: npm run build
-        env:
-          VITE_X42_API_URL: ${{ vars.VITE_X42_API_URL }}
       - uses: actions/upload-pages-artifact@v4
         with:
           path: dist

@@ -1,8 +1,495 @@
-.live-bank-content { display:grid; gap:16px; padding-bottom:24px }
-.live-bank-content .page-head { margin-bottom: 2px }
-.live-transfer, .live-sign-in { width:min(100%,690px) }
-.live-bank-content .accounts:empty { display:none }
-.live-pending.MuiChip-root,.live-processing.MuiChip-root { background:#fff1d5;color:#844d13 }
-.live-rejected.MuiChip-root,.live-manual_review.MuiChip-root { background:#fae8ec;color:#94364d }
-.live-mode-actions { display:flex; align-items:center; gap:9px }
-.live-bank-layout .MuiAlert-message { overflow-wrap:anywhere }
+:root { --ink:#17233f; --muted:#718098; --line:#e7ebf2; --brand:#204abe; --deep:#142654; --bg:#f5f7fb; --soft:#eff3ff; --hero:linear-gradient(125deg,#132c61,#204abe 68%,#4e6fd1); }
+body { background:var(--bg); color:var(--ink); }
+.layout.live-bank-layout { min-height:100vh; grid-template-columns:248px minmax(0,1fr); background:var(--bg); }
+.live-bank-layout .sidebar { min-height:100vh; padding:28px 17px 20px; border-right:1px solid var(--line); }
+.live-bank-layout .brand { text-decoration:none; margin-bottom:38px; padding-inline:7px; }
+.live-bank-layout .brand strong { font-size:16px; letter-spacing:.09em; }
+.live-bank-layout .brand small { font-size:9px; letter-spacing:.16em; }
+.live-bank-layout nav { gap:5px; }
+.live-bank-layout nav button { min-height:43px; padding:10px 12px; color:#65728a; font-size:13px; }
+.live-bank-layout nav button.active { background:#edf2ff; color:var(--brand); }
+.sidebar-bottom { display:grid; gap:7px; margin-top:auto; }
+.live-bank-layout .switch-link,.live-bank-layout .signout-button { margin:0; width:100%; border:0; background:transparent; color:#697790; text-decoration:none; cursor:pointer; font:inherit; font-size:12px; }
+.live-bank-layout .switch-link { border:1px solid var(--line); }
+.live-bank-layout .switch-link:hover,.live-bank-layout .signout-button:hover { background:var(--soft); color:var(--brand); }
+.live-bank-layout .topbar { min-height:68px; padding:0 39px; }
+.topbar > div:first-child,.topbar-right { display:flex; align-items:center; gap:11px; }
+.topbar-separator { color:#b2bccd; }
+.topbar-right { gap:17px; }
+.secure-label { display:inline-flex; align-items:center; gap:6px; color:#586781; font-size:12px; }
+.secure-label svg { color:#19815d; }
+.avatar { display:grid; place-items:center; width:35px; height:35px; border:0; border-radius:50%; background:#e9efff; color:var(--brand); font-weight:750; cursor:pointer; }
+.live-bank-content { display:grid; gap:19px; width:100%; max-width:1320px; padding:32px 40px 15px; }
+.live-bank-content .page-head { align-items:center; margin:0 0 3px; }
+.page-head .eyebrow { display:block; margin-bottom:8px; }
+.page-head h1 { color:#14254c; font-size:clamp(27px,3vw,36px); letter-spacing:-.05em; }
+.page-head p { margin-top:7px; color:#78859a; font-size:14px; }
+.eyebrow { color:#7c8aa2; font-size:10px; font-weight:760; letter-spacing:.16em; }
+.live-bank-content .MuiAlert-root { border-radius:11px; }
+.overview-hero { position:relative; overflow:hidden; display:flex; align-items:center; justify-content:space-between; min-height:192px; padding:30px 34px; color:white; border-radius:18px; background:var(--hero); box-shadow:0 12px 32px #1c37751c; }
+.overview-hero::after { content:""; position:absolute; width:320px; height:320px; right:-80px; top:-165px; border:1px solid #ffffff35; border-radius:50%; box-shadow:0 0 0 32px #ffffff12,0 0 0 67px #ffffff0c; }
+.overview-hero .eyebrow { color:#d0daf7; }
+.hero-balance { margin-top:9px; font-size:clamp(34px,4vw,48px); font-weight:760; letter-spacing:-.055em; }
+.overview-hero p { margin-top:4px; color:#d3ddf6; font-size:13px; }
+.hero-badge { display:flex; align-items:center; gap:7px; padding:9px 12px; color:#e8efff; border:1px solid #ffffff38; border-radius:9px; font-size:11px; }
+.overview-stats { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; }
+.stat-card { display:grid; gap:7px; min-height:111px; padding:17px 19px; background:white; border:1px solid var(--line); border-radius:13px; }
+.stat-card span,.stat-card small { color:#78859a; font-size:12px; }
+.stat-card strong { color:#18284d; font-size:20px; letter-spacing:-.035em; }
+.live-bank-content .panel { border:1px solid var(--line); border-radius:14px; box-shadow:0 4px 13px #182d5510; }
+.section-title { display:flex; align-items:center; gap:12px; min-height:68px; padding:15px 19px; }
+.section-title h2 { font-size:16px; color:#1a2949; letter-spacing:-.025em; }
+.section-title p { margin-top:4px; color:#7b879a; font-size:12px; }
+.section-icon { display:grid; place-items:center; width:37px; height:37px; flex:none; border-radius:10px; background:#f0f4ff; color:var(--brand); }
+.section-action { margin-left:auto; }
+.section-action .MuiButton-root { color:var(--brand); font-size:12px; }
+.account-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; padding:0 18px 18px; }
+.account-card { min-height:170px; padding:19px; border-radius:14px; }
+.account-card.primary-account { background:var(--hero); }
+.account-card.light-account { background:#fff; border:1px solid var(--line); }
+.account-balance-label { margin-bottom:2px; color:#d6def5; font-size:11px; }
+.light-account .account-balance-label { color:#75839a; }
+.account-value { font-size:30px; letter-spacing:-.045em; }
+.account-facts { display:flex; flex-wrap:wrap; gap:7px 16px; font-size:10px; opacity:.88; }
+.account-facts b { font-weight:680; }
+.light-account .account-facts { color:#5f6d84; }
+.quick-actions { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }
+.quick-actions button { display:flex; align-items:center; gap:12px; padding:15px; border:1px solid var(--line); border-radius:12px; background:white; color:var(--brand); text-align:left; cursor:pointer; }
+.quick-actions button:hover { border-color:#bdcafa; background:#fbfcff; }
+.quick-actions span b,.quick-actions span small { display:block; }
+.quick-actions span b { color:#1c2c4d; font-size:12px; }
+.quick-actions span small { margin-top:4px; color:#7a879b; font-size:10px; }
+.table-scroll { width:100%; }
+.live-bank-content table { min-width:700px; font-size:12px; }
+.live-bank-content th,.live-bank-content td { padding:12px 17px; border-color:#edf0f5; }
+.live-bank-content th { color:#78849a; background:#fafbfc; font-size:10px; letter-spacing:.04em; }
+.live-bank-content td strong { font-weight:670; }
+.text-action { padding:0; border:0; background:none; color:var(--brand); text-align:left; cursor:pointer; }
+.text-action:hover { text-decoration:underline; }
+.mono { font-family:ui-monospace,Consolas,monospace; }
+.amount { font-weight:700; }
+.amount.positive { color:#16805b; }
+.status-chip.MuiChip-root { height:24px; font-size:10px; font-weight:670; }
+.status-completed.MuiChip-root,.status-approved.MuiChip-root { background:#e4f5eb; color:#136b49; }
+.status-pending.MuiChip-root,.status-processing.MuiChip-root,.status-hold.MuiChip-root { background:#fff4dd; color:#8b5c16; }
+.status-rejected.MuiChip-root,.status-manual_review.MuiChip-root { background:#fbe9ec; color:#a03d50; }
+.form-grid { display:grid; gap:15px; padding:5px 20px 21px; }
+.ifsc-lookup { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:9px; }
+.ifsc-lookup .MuiButton-root { min-height:42px; white-space:nowrap; }
+.form-grid .MuiButton-root { min-height:42px; }
+.form-hint,.dialog-help { color:#738097; font-size:12px; line-height:1.55; }
+.confirm-details { display:grid; grid-template-columns:92px minmax(0,1fr); gap:13px 12px; padding:7px 2px 18px; font-size:13px; }
+.confirm-details span { color:#7a879b; }
+.confirm-details b { overflow-wrap:anywhere; }
+.confirm-amount { color:var(--brand); font-size:19px; }
+.filters { display:grid; grid-template-columns:1.3fr repeat(4,minmax(110px,1fr)); gap:10px; padding:0 18px 16px; }
+.empty { color:#6c7b92; }
+.empty strong { color:#243452; }
+.empty-action { display:flex; justify-content:center; padding:0 18px 19px; }
+.application-status { display:grid; grid-template-columns:1fr auto; gap:10px; align-items:center; margin:0 20px 18px; padding:16px; border:1px solid var(--line); border-radius:11px; background:#fafbfd; }
+.application-status h3 { margin:5px 0 0; color:#253555; font-size:19px; }
+.application-status p { margin-top:5px; color:#78859a; font-size:11px; }
+.application-status .MuiAlert-root { grid-column:1 / -1; }
+.inline-note { margin:0 20px 15px; color:#78859a; font-size:12px; }
+.file-input { display:grid; gap:7px; color:#52617a; font-size:12px; }
+.file-input input { max-width:100%; padding:10px; border:1px dashed #cbd3e1; border-radius:9px; background:#fafbfd; }
+.file-input small { color:#7a879b; }
+.portfolio-total { display:flex; justify-content:space-between; align-items:center; margin:0 20px 15px; padding:16px; border-radius:11px; background:#f4f6fc; color:#66748b; font-size:12px; }
+.portfolio-total strong { color:#1b2b50; font-size:21px; }
+.compact-form { grid-template-columns:1fr 1fr auto; align-items:start; }
+.compact-form > .MuiAlert-root { grid-column:1/-1; }
+.admin-stack { display:grid; gap:15px; }
+.action-row { display:flex; flex-wrap:wrap; gap:3px; }
+.action-row .MuiButton-root { font-size:11px; }
+.compact-empty { min-height:60px; }
+.receipt { display:grid; justify-items:center; padding:8px 4px 12px; text-align:center; }
+.receipt-mark { display:flex; align-items:center; gap:8px; color:#25385e; font-size:13px; }
+.receipt-mark svg { color:var(--brand); }
+.receipt-amount { margin:19px 0 10px; color:#17284e; font-size:31px; font-weight:730; }
+.receipt dl { display:grid; grid-template-columns:105px minmax(0,1fr); width:100%; gap:9px 10px; margin:20px 0 13px; text-align:left; font-size:12px; }
+.receipt dt { color:#7b879a; }
+.receipt dd { margin:0; color:#273753; font-weight:620; overflow-wrap:anywhere; }
+.receipt .form-hint { text-align:left; }
+.page-footer { justify-content:space-between; margin-top:4px; padding:13px 0; color:#8792a4; font-size:10px; }
+.page-footer span { display:flex; align-items:center; gap:5px; }
+
+.auth-shell { min-height:100vh; padding:27px clamp(20px,6vw,85px) 17px; background:radial-gradient(ellipse at 23% 40%,#e8efff 0,transparent 43%),#f7f9fc; }
+.auth-brand { display:flex; align-items:center; gap:11px; width:min(1180px,100%); margin:0 auto; color:#192d5a; }
+.auth-brand .brand-icon { width:42px; height:42px; }
+.auth-brand strong,.auth-brand small { display:block; }
+.auth-brand strong { font-size:15px; letter-spacing:.1em; }
+.auth-brand small { margin-top:3px; color:#7a879d; font-size:9px; letter-spacing:.16em; }
+.auth-layout { display:grid; grid-template-columns:1.05fr .85fr; align-items:center; gap:clamp(40px,9vw,135px); width:min(1040px,100%); min-height:calc(100vh - 132px); margin:0 auto; padding:40px 0; }
+.auth-copy { max-width:470px; }
+.auth-copy h1 { margin-top:15px; color:#122650; font-size:clamp(45px,6.5vw,70px); line-height:1.02; letter-spacing:-.065em; }
+.auth-copy > p { max-width:380px; margin-top:19px; color:#6e7d96; font-size:16px; line-height:1.7; }
+.auth-trust { display:grid; gap:11px; margin-top:35px; color:#415575; font-size:12px; }
+.auth-trust span { display:flex; align-items:center; gap:9px; }
+.auth-trust svg { color:#288365; }
+.auth-ifsc { display:block; margin-top:58px; color:#8793a7; font:11px ui-monospace,Consolas,monospace; letter-spacing:.08em; }
+.auth-card { display:grid; gap:18px; padding:31px; border:1px solid #e9edf4; border-radius:17px; background:#fff; box-shadow:0 18px 55px #20366012; }
+.auth-card-heading h2 { margin-top:9px; color:#1b2b4d; font-size:24px; letter-spacing:-.04em; }
+.auth-card-heading p { margin-top:7px; color:#7b879a; font-size:12px; line-height:1.5; }
+.auth-card .form-grid { padding:0; }
+.auth-card .MuiButton-root { min-height:46px; }
+.auth-switch { color:#7a879a; font-size:12px; text-align:center; }
+.auth-switch button,.resend-link { border:0; background:none; color:var(--brand); font:inherit; font-weight:680; cursor:pointer; }
+.resend-link { justify-self:center; font-size:11px; }
+.resend-link:disabled { color:#aab3c2; cursor:not-allowed; }
+.auth-footnote { padding-top:14px; border-top:1px solid #eff1f5; color:#8994a5; font-size:10px; line-height:1.5; text-align:center; }
+.auth-footer { display:flex; justify-content:space-between; width:min(1180px,100%); margin:0 auto; color:#8792a4; font-size:10px; }
+.auth-footer a { color:#64738d; text-decoration:none; }
+.auth-footer a:hover { color:var(--brand); }
+
+@media(max-width:950px) {
+  .layout.live-bank-layout { grid-template-columns:205px minmax(0,1fr); }
+  .live-bank-content { padding-inline:24px; }
+  .live-bank-layout .topbar { padding-inline:24px; }
+  .filters { grid-template-columns:repeat(3,minmax(0,1fr)); }
+}
+@media(max-width:700px) {
+  .layout.live-bank-layout { display:block; }
+  .live-bank-layout .sidebar { position:static; min-height:0; padding:11px 13px 8px; border-bottom:1px solid var(--line); }
+  .live-bank-layout .brand { margin:0 0 8px; }
+  .live-bank-layout nav { display:flex; overflow-x:auto; flex-wrap:nowrap; gap:3px; padding:2px 0 5px; scrollbar-width:thin; }
+  .live-bank-layout nav button { flex:none; min-height:37px; padding:8px 10px; white-space:nowrap; }
+  .sidebar-bottom { display:flex; align-items:center; gap:4px; margin-top:7px; }
+  .live-bank-layout .switch-link,.live-bank-layout .signout-button { width:auto; padding:7px 9px; }
+  .live-bank-layout .topbar { min-height:53px; padding-inline:15px; }
+  .secure-label { font-size:0; }
+  .secure-label svg { width:17px; height:17px; }
+  .live-bank-content { gap:14px; padding:20px 14px 12px; }
+  .live-bank-content .page-head { align-items:flex-start; }
+  .page-head h1 { font-size:27px; }
+  .page-head p { max-width:280px; font-size:12px; }
+  .page-head > button { flex:none; min-width:0; font-size:11px; }
+  .overview-hero { align-items:flex-start; min-height:160px; flex-direction:column; gap:14px; padding:22px; }
+  .hero-balance { font-size:37px; }
+  .hero-badge { padding:6px 8px; font-size:10px; }
+  .overview-stats { grid-template-columns:1fr; gap:8px; }
+  .stat-card { min-height:0; grid-template-columns:1fr auto; align-items:center; gap:3px 10px; padding:12px 14px; }
+  .stat-card span { grid-column:1; }
+  .stat-card strong { grid-column:2; grid-row:1 / span 2; font-size:16px; text-align:right; }
+  .stat-card small { grid-column:1; }
+  .account-grid { grid-template-columns:1fr; padding:0 12px 12px; }
+  .account-card { min-height:152px; padding:16px; }
+  .account-value { font-size:28px; }
+  .account-facts { gap:7px 12px; }
+  .quick-actions { grid-template-columns:1fr; gap:8px; }
+  .quick-actions button { padding:12px; }
+  .section-title { gap:9px; min-height:60px; padding:12px; }
+  .section-title h2 { font-size:14px; }
+  .section-title p { max-width:240px; font-size:10px; }
+  .section-icon { width:33px; height:33px; }
+  .section-action .MuiButton-root { padding-inline:6px; font-size:10px; }
+  .form-grid { padding:4px 13px 15px; }
+  .ifsc-lookup { grid-template-columns:minmax(0,1fr) auto; }
+  .filters { grid-template-columns:1fr 1fr; padding:0 12px 13px; }
+  .compact-form { grid-template-columns:1fr; }
+  .compact-form > .MuiAlert-root { grid-column:1; }
+  .page-footer { align-items:flex-start; flex-direction:column; }
+  .auth-shell { padding:16px 16px 13px; }
+  .auth-layout { grid-template-columns:1fr; gap:23px; min-height:unset; padding:35px 0 25px; }
+  .auth-copy { max-width:none; }
+  .auth-copy h1 { font-size:42px; }
+  .auth-copy > p { margin-top:10px; font-size:13px; }
+  .auth-trust { display:flex; flex-wrap:wrap; gap:10px 17px; margin-top:17px; font-size:10px; }
+  .auth-ifsc { margin-top:15px; }
+  .auth-card { gap:15px; padding:21px 17px; }
+  .auth-card-heading h2 { font-size:21px; }
+  .auth-footer { font-size:9px; }
+}
+@media(prefers-reduced-motion:reduce) { *,*::before,*::after { scroll-behavior:auto !important; transition:none !important; animation:none !important; } }
+
+/* Nizzus festive-home visual theme */
+:root {
+  --ink:#38271d;
+  --muted:#796751;
+  --line:#e7d6b7;
+  --brand:#8f2e20;
+  --deep:#4d2019;
+  --bg:#f7f0df;
+  --soft:#f7e8c4;
+  --hero:linear-gradient(130deg,#6f241b,#9c3723 58%,#be602b);
+  --festival-brass:#c59035;
+  --festival-leaf:#214a36;
+  --festival-cream:#fffaf0;
+}
+body { background:#f7f0df; color:var(--ink); }
+.layout.live-bank-layout { background:#f8f3e7; }
+.live-bank-layout .sidebar {
+  position:sticky;
+  isolation:isolate;
+  background:linear-gradient(180deg,#173a2b 0%,#1d4633 62%,#163526 100%);
+  border-right:1px solid #b98943;
+  box-shadow:4px 0 20px #4f35160c;
+}
+.live-bank-layout .sidebar::after {
+  content:""; position:absolute; z-index:-1; right:-50px; bottom:92px;
+  width:220px; height:220px;
+  background:url('./assets/kolam-medallion.svg') center/contain no-repeat;
+  opacity:.13; pointer-events:none;
+}
+.live-bank-layout .brand { color:#fff5dc; }
+.live-bank-layout .brand-icon,.auth-brand .brand-icon {
+  color:#fff4d6;
+  background:linear-gradient(145deg,#d29c3d,#9f571e 70%,#75351c);
+  border:1px solid #f1d38b;
+  border-radius:50% 50% 45% 45%;
+  box-shadow:0 0 0 4px #d5a74a20,0 5px 17px #080d091e;
+}
+.live-bank-layout nav button { color:#e7d9b9; }
+.live-bank-layout nav button:hover { color:#fff8e8; background:#ffffff12; }
+.live-bank-layout nav button.active { color:#42271c; background:#f0d696; box-shadow:inset 3px 0 #a73d26; }
+.live-bank-layout nav button.active svg { color:#8d3322; }
+.live-bank-layout .switch-link,.live-bank-layout .signout-button { color:#e4d4ae; }
+.live-bank-layout .switch-link { border-color:#d0ad6766; }
+.live-bank-layout .switch-link:hover,.live-bank-layout .signout-button:hover { color:#fff7e6; background:#ffffff12; }
+.live-bank-layout .topbar {
+  background:#fffaf0;
+  border-bottom-color:#e4d2ad;
+  box-shadow:0 3px 12px #634a1a0a;
+}
+.live-bank-layout .topbar strong { color:#6b2a1d; }
+.topbar-separator { color:#c49a51; }
+.secure-label { color:#5a694e; }
+.secure-label svg { color:#477447; }
+.avatar { color:#6d2a1e; background:#f0dfb9; border:1px solid #e0c98f; }
+.live-bank-content {
+  background-color:#f8f3e7;
+  background-image:radial-gradient(circle,#b38b4919 .8px,transparent 1px);
+  background-size:24px 24px;
+}
+.live-bank-content .page-head h1 { color:#56241b; }
+.live-bank-content .page-head p { color:#776751; }
+.eyebrow { color:#857149; }
+.live-bank-content .panel {
+  background:#fffdf7;
+  border-color:#e6d5b4;
+  box-shadow:0 5px 16px #69471810;
+}
+.section-icon { color:#8d3821; background:#f5e7c7; border:1px solid #ecdbb3; }
+.section-icon { box-shadow:inset 0 0 0 2px #ffffff70,0 2px 5px #79511a12; }
+.section-title h2 { color:#54271d; }
+.section-title p { color:#82715a; }
+.section-action .MuiButton-root { color:#8b3522; }
+.overview-hero {
+  border:1px solid #cf9c4e;
+  background:linear-gradient(125deg,#64231b 0%,#8b2c20 55%,#a74c25 100%);
+  box-shadow:0 12px 27px #692b1a25,inset 0 0 0 5px #f3d58b12;
+}
+.overview-hero::after {
+  top:-10px;
+  right:-12px;
+  width:220px;
+  height:220px;
+  border:0;
+  border-radius:0;
+  opacity:.42;
+  background:
+    url('./assets/pongal-pot.svg') center/126px auto no-repeat,
+    url('./assets/kolam-medallion.svg') center/contain no-repeat;
+  box-shadow:none;
+}
+.overview-hero .eyebrow { color:#efd697; }
+.overview-hero p { color:#f3ddad; }
+.hero-badge { color:#fff2d0; border-color:#eac97a66; background:#ffffff0b; }
+.overview-stats .stat-card {
+  border-color:#e6d5b4;
+  background:linear-gradient(145deg,#fffdf8,#fbf2df);
+  box-shadow:0 4px 12px #6c4e2010;
+}
+.stat-card span,.stat-card small { color:#7e6d55; }
+.stat-card strong { color:#59291d; }
+.account-card.primary-account {
+  background:linear-gradient(130deg,#76271e,#a63b24 68%,#bc642d);
+  border:1px solid #d3a453;
+  box-shadow:inset 0 0 0 4px #f6da9415;
+}
+.account-card.primary-account::after {
+  top:4px; right:-28px; width:170px; height:170px;
+  border:0; border-radius:0;
+  background:url('./assets/kolam-medallion.svg') center/contain no-repeat;
+  box-shadow:none; opacity:.23;
+}
+.account-card.primary-account::after { color:#f8dfa0; opacity:.17; }
+.account-card.light-account {
+  background:linear-gradient(145deg,#fffdf8,#f8edda);
+  border:1px solid #dec897;
+}
+.account-card.light-account::after {
+  top:4px; right:-28px; width:165px; height:165px;
+  border:0; border-radius:0;
+  background:url('./assets/kolam-medallion.svg') center/contain no-repeat;
+  box-shadow:none; opacity:.17;
+}
+.account-card.light-account::after { color:#a27132; }
+.account-head { color:inherit; }
+.account-balance-label { color:#f0dcae; }
+.light-account .account-balance-label { color:#7b6546; }
+.account-facts { color:#f6e7c4; }
+.light-account .account-facts { color:#735e42; }
+.light-account .account-foot span:last-child { background:#efe1c2; }
+.quick-actions button {
+  color:#8d3821;
+  border-color:#e4d3b2;
+  background:linear-gradient(145deg,#fffdf8,#fbf1dc);
+  box-shadow:0 3px 10px #6b4e1b0b;
+}
+.quick-actions button:hover { border-color:#cb9c4d; background:#fff9e9; }
+.quick-actions span b { color:#50271e; }
+.quick-actions span small { color:#7f6c52; }
+.live-bank-content th { color:#765d3c; background:#f7eedc; }
+.live-bank-content th,.live-bank-content td { border-color:#ebdfca; }
+.live-bank-content td { color:#453427; }
+.live-bank-content td small { color:#88775e; }
+.text-action { color:#8c3221; }
+.amount.positive { color:#267247; }
+.status-completed.MuiChip-root,.status-approved.MuiChip-root { color:#205e3c; background:#e4efdb; }
+.status-pending.MuiChip-root,.status-processing.MuiChip-root,.status-hold.MuiChip-root { color:#765014; background:#f7e8bb; }
+.status-rejected.MuiChip-root,.status-manual_review.MuiChip-root { color:#8d3023; background:#f3dfd3; }
+.form-hint,.dialog-help { color:#796a54; }
+.confirm-details span { color:#806e55; }
+.confirm-amount { color:#8b3020; }
+.filters .MuiOutlinedInput-root,.form-grid .MuiOutlinedInput-root { background:#fffdf8; }
+.filters .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline,
+.form-grid .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline,
+.auth-card .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline { border-color:#a44829 !important; }
+.filters .MuiInputLabel-root.Mui-focused,.form-grid .MuiInputLabel-root.Mui-focused,.auth-card .MuiInputLabel-root.Mui-focused { color:#8b3622; }
+.MuiButton-containedPrimary {
+  color:#fff8e9 !important;
+  background:linear-gradient(135deg,#862d20,#a64425) !important;
+  box-shadow:0 3px 8px #762d1e25 !important;
+}
+.MuiButton-containedPrimary:hover { background:linear-gradient(135deg,#72241b,#92371f) !important; }
+.MuiButton-outlinedPrimary { color:#843421 !important; border-color:#b77c3b !important; }
+.MuiButton-outlinedPrimary:hover { background:#f6e9cd !important; border-color:#8b3b25 !important; }
+.MuiButton-textPrimary { color:#8b3622 !important; }
+.MuiButton-textPrimary:hover { background:#f6e9cd !important; }
+.application-status { border-color:#e2d0aa; background:#fbf5e8; }
+.application-status h3 { color:#60291c; }
+.application-status p,.inline-note { color:#7c6a50; }
+.file-input { color:#64533d; }
+.file-input input { border-color:#cdb477; background:#fffaf0; }
+.portfolio-total { color:#746047; background:#f5ead3; }
+.portfolio-total strong { color:#5c291d; }
+.empty { color:#796951; }
+.empty strong { color:#522a20; }
+.empty svg { color:#9b4527; }
+.receipt-mark { color:#5b291d; }
+.receipt-mark svg { color:#a24b28; }
+.receipt-amount { color:#64271c; }
+.receipt dt { color:#84725a; }
+.receipt dd { color:#4d3b2b; }
+.page-footer { color:#88775e; }
+.page-footer svg { color:#477447; }
+
+/* The sign-in card is framed like a festive entrance, with a brass toran and kolam dots. */
+.auth-shell {
+  position:relative;
+  isolation:isolate;
+  overflow:hidden;
+  background:
+    radial-gradient(circle at 13% 84%,#be88311b 0 2px,transparent 2.7px),
+    radial-gradient(circle at 86% 16%,#9d3d2413 0 2px,transparent 2.7px),
+    radial-gradient(ellipse at 14% 34%,#f4dfb5 0,transparent 43%),
+    linear-gradient(135deg,#f5ecd9,#fbf7ed 53%,#f1e4c9);
+  background-size:30px 30px,34px 34px,auto,auto;
+}
+.auth-shell::before,.auth-shell::after {
+  content:"";
+  position:absolute;
+  z-index:-1;
+  width:205px;
+  height:205px;
+  border:0;
+  background:url('./assets/kolam-medallion.svg') center/contain no-repeat;
+  opacity:.34;
+  pointer-events:none;
+}
+.auth-shell::before { left:-89px; top:34%; }
+.auth-shell::after { right:-102px; bottom:8%; }
+.auth-brand { color:#5d291d; }
+.auth-brand small { color:#806a4d; }
+.auth-layout { position:relative; z-index:1; }
+.auth-copy {
+  position:relative;
+  display:flex;
+  min-height:510px;
+  flex-direction:column;
+  justify-content:center;
+  overflow:hidden;
+  padding:82px 42px 38px;
+  color:#fff2d3;
+  border:3px double #d5a54e;
+  border-radius:220px 220px 18px 18px;
+  background:
+    url('./assets/festival-entrance.svg') center 43% / 96% 100% no-repeat,
+    linear-gradient(158deg,#54251d,#74281e 55%,#44251b);
+  box-shadow:0 18px 42px #59311a29,inset 0 0 0 7px #f0d18a12;
+}
+.auth-copy::before {
+  content:"";
+  position:absolute;
+  inset:12px;
+  border:1px solid #e4bf6d88;
+  border-radius:inherit;
+  pointer-events:none;
+}
+.auth-copy::after {
+  content:"";
+  position:absolute;
+  top:18px;
+  left:9%;
+  right:9%;
+  height:52px;
+  border:0;
+  background:url('./assets/maavilai-thoran.svg') center top / 100% 52px no-repeat;
+  filter:drop-shadow(0 3px 2px #24110b45);
+  pointer-events:none;
+}
+.auth-copy > * { position:relative; z-index:1; }
+.auth-copy .eyebrow { color:#eccb81; }
+.auth-copy h1 { color:#fff5dd; text-shadow:0 2px 16px #2b100c55; }
+.auth-copy > p { color:#f0dfbd; }
+.auth-trust { color:#f3e5c7; }
+.auth-trust svg { color:#e4c16d; }
+.auth-ifsc { color:#e2c58c; }
+.auth-card {
+  position:relative;
+  overflow:hidden;
+  border:1px solid #ddc692;
+  border-radius:18px;
+  background:linear-gradient(150deg,#fffdf7,#fff8e9);
+  box-shadow:0 19px 48px #5637181b,0 2px 0 #fff inset;
+}
+.auth-card::after {
+  content:"";
+  position:absolute;
+  right:-29px;
+  bottom:-31px;
+  width:115px;
+  height:115px;
+  border:1px solid #b8863c2c;
+  border-radius:50%;
+  box-shadow:0 0 0 9px #b8863c0c,0 0 0 19px #b8863c09,0 0 0 29px #b8863c07;
+  pointer-events:none;
+}
+.auth-card > * { position:relative; z-index:1; }
+.auth-card-heading .eyebrow { color:#8d6330; }
+.auth-card-heading h2 { color:#54271d; }
+.auth-card-heading p { color:#7a694f; }
+.auth-switch { color:#77664e; }
+.auth-switch button,.resend-link { color:#8f3321; }
+.auth-footnote { border-top-color:#eadfc9; color:#85745b; }
+.auth-footer { color:#806d53; }
+.auth-footer a { color:#76402c; }
+
+@media(max-width:700px) {
+  .auth-copy { min-height:420px; padding:75px 25px 26px; border-radius:175px 175px 16px 16px; }
+  .auth-copy h1 { font-size:40px; }
+  .auth-copy > p { max-width:310px; }
+  .auth-ifsc { margin-top:17px; }
+  .auth-card { border-radius:15px; }
+  .live-bank-layout .sidebar { background:linear-gradient(180deg,#173a2b,#214a35); }
+}

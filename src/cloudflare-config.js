@@ -1,1 +1,1 @@
-export default "https://sharedbank-switch.e-commerce-sriramtpsiog.workers.dev";
+export default 'https://sharedbank-switch.e-commerce-sriramtpsiog.workers.dev';
